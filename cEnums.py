@@ -7,13 +7,13 @@ from collections.abc import Mapping
 from enum import Enum
 import re
 
-    
+
 def globalize(thing:typing.Union[typing.Dict,Enum,typing.List])->None:
     """
     Break something apart into values and put it in the global namespace
-    
+
     can globalize dict, enum, or object
-    
+
     NOTE: this does not put thing itself in the global namespace
     """
     g=globals()
@@ -26,7 +26,7 @@ def globalize(thing:typing.Union[typing.Dict,Enum,typing.List])->None:
     else:
         for k,v in thing.__dict__.items():
             g[k]=v
-        
+
 def stripCComments(cCode:str)->str:
     """
     removes all comments from code to make it better to parse
@@ -49,16 +49,19 @@ def stripCComments(cCode:str)->str:
                 result.append('\n')
                 result.append(cols[-1])
     return ''.join(result)
-        
+
 def loadCEnums(filename:str,globalizeAll:bool=False
-    )->typing.Dict[typing.Optional[str],typing.Dict[str,typing.Union[str,int]]]:
+    )->typing.Dict[typing.Optional[str],
+        typing.Dict[str,typing.Union[str,int]]]:
     """
     Loads all enums from a c file.
-    
-    :globalizeAll: will add all enums and all of their values to the global namespace
+
+    :globalizeAll: will add all enums and all of their
+        values to the global namespace
     """
-    enums:typing.Dict[typing.Optional[str],typing.Dict[str,typing.Union[str,int]]]={} # {enum_name:{k:v}} or for #defines {None:{k:v}}
-    with open(filename,'r') as f:
+    enums:typing.Dict[typing.Optional[str],
+        typing.Dict[str,typing.Union[str,int]]]={} # {enum_name:{k:v}} or for #defines {None:{k:v}} # noqa: E501 # pylint: disable=line-too-long
+    with open(filename,'r',encoding="utf-8") as f:
         cCode=f.read()
     cCode=stripCComments(cCode)
     # grab all the #defines
@@ -71,7 +74,7 @@ def loadCEnums(filename:str,globalizeAll:bool=False
         poundDefines[name]=value
     enums[None]=poundDefines
     # next grab all the enums
-    typedefRegexStr=r"""\n\s*typedef\s+enum\s+(?P<name>[a-zA-Z_]+)\s+\{\s+(?P<values>[^}]+)\}\s*(?P<name2>[a-zA-Z_]+)"""
+    typedefRegexStr=r"""\n\s*typedef\s+enum\s+(?P<name>[a-zA-Z_]+)\s+\{\s+(?P<values>[^}]+)\}\s*(?P<name2>[a-zA-Z_]+)""" # noqa: E501 # pylint: disable=line-too-long
     typedefRegex=re.compile(typedefRegexStr,re.DOTALL)
     for m in typedefRegex.finditer(cCode):
         name=m.group('name')

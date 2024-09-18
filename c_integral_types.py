@@ -1,7 +1,6 @@
 """
 Defines primitive C integral number data types
 """
-import typing
 from enum import Enum
 from math import ceil
 
@@ -95,10 +94,10 @@ class IntegralCType:
         NOTE: scanf string and printf
             string may not always be the same
         """
-        l=self._printfLengthSpec
+        pLen=self._printfLengthSpec
         if self.baseFormat=='oct':
-            return f'%{l}o'
-        return f'%{l}i'
+            return f'%{pLen}o'
+        return f'%{pLen}i'
 
     @property
     def printfString(self)->str:
@@ -109,18 +108,18 @@ class IntegralCType:
         NOTE: scanf string and printf
             string may not always be the same
         """
-        l=self._printfLengthSpec
+        pLen=self._printfLengthSpec
         if self.baseFormat=='oct':
-            return f'0%0{self.numBits<<2}{l}o'
+            return f'0%0{self.numBits<<2}{pLen}o'
         if self.baseFormat=='hex':
             if self.preferCaps:
-                return f'0x%0{self.numBytes<<1}{l}X'
-            return f'0x%0{self.numBytes<<1}{l}x'
+                return f'0x%0{self.numBytes<<1}{pLen}X'
+            return f'0x%0{self.numBytes<<1}{pLen}x'
         if self.baseFormat=='bin':
-            return f'0b%0{self.numBits}{l}b'
+            return f'0b%0{self.numBits}{pLen}b'
         if self.signed:
-            return f'%{l}d'
-        return f'%{l}u'
+            return f'%{pLen}d'
+        return f'%{pLen}u'
 
     @property
     def cTypeName(self)->str:

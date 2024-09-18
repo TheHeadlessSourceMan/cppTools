@@ -1,4 +1,6 @@
-import typing
+"""
+Tools for esamining code branches
+"""
 import re
 
 
@@ -16,4 +18,3 @@ def branches(codeBlock:str):
 
     # Return the list of branches
     return branches
-

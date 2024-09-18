@@ -30,12 +30,14 @@ class PrintfFormatPlaceholder:
 
     def __init__(self,
         parameter:typing.Union[None,str,int]=None,
-        flags:typing.Iterable[str]=[],
+        flags:typing.Optional[typing.Iterable[str]]=None,
         width:typing.Union[None,str,int]=None,
         precision:typing.Union[None,str,int]=None,
         length:typing.Optional[str]=None,
-        type:str=''):
+        type:str=''): # pylint: disable=redefined-builtin
         """ """
+        if flags is None:
+            flags=tuple()
         self.parameter:typing.Optional[int]
         if parameter is None or isinstance(parameter,int):
             self.parameter=parameter
@@ -58,7 +60,7 @@ class PrintfFormatPlaceholder:
             self.precision=int(precision.rsplit('.',1)[-1])
         self.length:typing.Optional[str]=length
         self.type:str=type
-        
+
     def __repr__(self):
         return '\n'.join(['---',
             f'parameter: {self.parameter}',
@@ -101,13 +103,13 @@ class Printf:
         how many parameters are required for this printf format
         """
         return len(self._valuePlaceholders)
-    
+
     @property
     def parameters(self)->typing.Iterable[PrintfFormatPlaceholder]:
         """
         info about all parameter placeholders
         """
-        return self._valuePlaceholders    
+        return self._valuePlaceholders
     @property
     def placeholders(self)->typing.Iterable[PrintfFormatPlaceholder]:
         """
@@ -148,10 +150,12 @@ class Printf:
                 ret.append(step)
             else:
                 if currentVal>=len(values):
-                    raise PrinfIncorrectValues("Too few values for printf format")
+                    raise PrinfIncorrectValues(
+                        "Too few values for printf format")
                 value=values[currentVal]
                 currentVal+=1
-                # TODO: use the actual parts of the % statement to determine how to print
+                # TODO: use the actual parts of the % statement
+                #   to determine how to print
                 ret.append(str(value))
         if currentVal<len(values):
             raise PrinfIncorrectValues("Too many values for printf format")
@@ -216,21 +220,29 @@ def decodeCEscapeSequences(s:str)->str:
                 ret.append('\t')
                 ret.append(bs[1:])
             elif bs[0]=='b':
-                raise NotImplementedError(r'Dont know how to add backspace ("\b") to python string')
+                raise NotImplementedError(
+                    r'Dont know how to add backspace ("\b") to python string')
             elif bs[0]=='e':
-                raise NotImplementedError(r'Dont know how to add escape ("\e") to python string')
+                raise NotImplementedError(
+                    r'Dont know how to add escape ("\e") to python string')
             elif bs[0]=='f':
-                raise NotImplementedError(r'Dont know how to add formfeed ("\f") to python string')
+                raise NotImplementedError(
+                    r'Dont know how to add formfeed ("\f") to python string')
             elif bs[0]=='v':
-                raise NotImplementedError(r'Dont know how to add vertical tab ("\v") to python string')
+                raise NotImplementedError(
+                    r'Dont know how to add v-tab ("\v") to python string')
             elif bs[0]=='a':
-                raise NotImplementedError(r'Dont know how to add alert/bell ("\a") to python string')
+                raise NotImplementedError(
+                    r'Dont know how to add alert/bell ("\a") to python string')
             elif bs[0] in '01234567':
-                raise NotImplementedError(r'Dont know how to add octals to python string')
+                raise NotImplementedError(
+                    r'Dont know how to add octals to python string')
             elif bs[0]=='x':
-                raise NotImplementedError(r'Dont know how to add hex char to python string')
+                raise NotImplementedError(
+                    r'Dont know how to add hex char to python string')
             elif bs[0] in 'uU':
-                raise NotImplementedError(r'Dont know how to add unicode char to python string')
+                raise NotImplementedError(
+                    r'Dont know how to add unicode char to python string')
             else:
                 ret.append(bs)
         else:

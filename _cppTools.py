@@ -1,4 +1,6 @@
-
+"""
+Main entrypoint for using cpp tools
+"""
 import typing
 import regex as re
 from paths import FileLocation
@@ -7,7 +9,9 @@ from paths.urlTyping import UrlCompatible, asURL
 
 _multiLineCommentRe=r"""(?:/[*](?P<multiLineComment>.*?)[*]/)"""
 _singleLineCommentRe=r"""(?://(?P<singleLineComment>[^\r\n]*))"""
-_bothCommentsRe=re.compile(f'(?P<code>.*?)(?:{_multiLineCommentRe}|{_singleLineCommentRe}|$)',re.DOTALL)
+_bothCommentsRe=re.compile(
+    f'(?P<code>.*?)(?:{_multiLineCommentRe}|{_singleLineCommentRe}|$)',
+    re.DOTALL)
 def cppSeparateComments(code:str)->typing.Generator[str,None,None]:
     """
     yields [code,comment,code,comment,...]
@@ -57,21 +61,23 @@ def cppValue2PyValue(code:str)->str:
                 vv=v[0:-1]
             try:
                 vv=float(vv)
-            except ValueError:
-                raise ValueError(f'Unknown python data type for "{v}"')
+            except ValueError as e:
+                raise ValueError(f'Unknown python data type for "{v}"') from e # noqa: E501 # pylint: disable=line-too-long
     return vv
-    
+
 _varnameRe=re.compile(r"""(?P<name>[A-Za-z_][A-Za-z0-9_]*)""")
 def cppIsLeagalVarName(varname:str)->bool:
     """
     Check to see if a variable name is legal
     """
-    return _varnameRe.match(varname)!=None
+    return _varnameRe.match(varname) is not None
 def cppMakeLegalVarName(varname:str)->str:
     """
     Make a variable name legal
     """
-    varname=''.join([(c if c.isalpha() or c.isdigit() else '_') for c in varname.strip()])
+    varname=''.join([
+        (c if c.isalpha() or c.isdigit() else '_')
+        for c in varname.strip()])
     if not varname:
         varname='_'
     else:
@@ -85,11 +91,15 @@ def cppMakeLegalVarName(varname:str)->str:
 
 _declRe=r"""(?:(?P<type>[a-z_]+(\s*[*]+)?)?\s*"""+_varnameRe.pattern+')'
 _paramRe='(?P<param>'+_declRe+r"""(?:\s*=\s*(?P<default>[^\s\n$]))?)"""
-_paramsListRe=re.compile(f"(?:^\s*|\s*,\s*){_paramRe}",re.DOTALL)
+_paramsListRe=re.compile(r"(?:^\s*|\s*,\s*)"+_paramRe,re.DOTALL)
 _funcParseReStr=_declRe+r"?\s*[(]\s*(?P<params>[^)]*)\s*[)]"
 _funcParseRe=re.compile(_funcParseReStr,re.DOTALL)
 def cppFunctionInfo(functionDefinition:str
-    )->typing.Tuple[str,str,typing.Dict[str,typing.Union[typing.Tuple[str,typing.Any],typing.Tuple[str]]]]:
+    )->typing.Tuple[
+        str,
+        str,
+        typing.Dict[str,
+            typing.Union[typing.Tuple[str,typing.Any],typing.Tuple[str]]]]:
     """
     given a funcion header like
         "void myfunc(int a,float b=10)"
@@ -99,7 +109,8 @@ def cppFunctionInfo(functionDefinition:str
     """
     returnType=''
     name=''
-    parameters:typing.Dict[str,typing.Union[typing.Tuple[str,typing.Any],typing.Tuple[str]]]={}
+    parameters:typing.Dict[str,
+        typing.Union[typing.Tuple[str,typing.Any],typing.Tuple[str]]]={}
     m=_funcParseRe.search(cppRemoveComments(functionDefinition))
     if m.group('type') is not None:
         returnType=m.group('type')
@@ -113,22 +124,34 @@ def cppFunctionInfo(functionDefinition:str
                 val=cppValue2PyValue(mm.group('default'))
                 parameters[mm.group('name')]=(mm.group('type'),val)
     return (returnType,name,parameters)
+
 def cppFunctionParameters(functionDefinition:str
-    )->typing.Dict[str,typing.Union[typing.Tuple[str,typing.Any],typing.Tuple[str]]]:
+    )->typing.Dict[str,
+        typing.Union[typing.Tuple[str,typing.Any],typing.Tuple[str]]]:
+    """
+    Extract funtion parameters from a funtion definition
+    """
     return cppFunctionInfo(functionDefinition)[2]
 
 class CppScope:
     """
     Variable scope for cpp code
     """
-    def __init__(self,location:FileLocation,contexts:'CppScopes',parent:typing.Optional['CppScope']):
+    def __init__(self,
+        location:FileLocation,
+        contexts:'CppScopes',
+        parent:typing.Optional['CppScope']):
+        """ """
         self.contexts=contexts
         self.parent=parent
         self.location=location
         self.chilren:typing.List['CppScope']=[]
-        
+
     @property
     def root(self)->'CppScope':
+        """
+        Get the root scope (main entrypoint)
+        """
         return self.contexts
 
 
@@ -137,7 +160,8 @@ class CppScopes(CppScope):
     Does not cover single-line scopes like
         if(x)
             theny();
-    This is generally not a problem because there is little time to do anything context-ey.
+    This is generally not a problem because there is
+    little time to do anything context-ey.
     """
 
     def __init__(self,code:str,path:UrlCompatible):
@@ -146,6 +170,9 @@ class CppScopes(CppScope):
         self.assign(code,path)
 
     def assign(self,code:str,path:UrlCompatible):
+        """
+        Assign the scope
+        """
         path=asURL(path)
         code=cppRemoveComments(code)
         linearpos=0
@@ -155,7 +182,8 @@ class CppScopes(CppScope):
             raise NotImplementedError()
 
 
-def cppFileLocationToFunctionDefinition(location:str)->typing.Optional[str]:
+def cppFileLocationToFunctionDefinition(
+    location:str)->typing.Optional[str]:
     """
     TODO:
     """
