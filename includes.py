@@ -36,15 +36,16 @@ class HasIncludePaths(typing.Protocol):
     """anything that has an includePaths member"""
     includePaths:typing.Iterable[str]
 IncludePathsCompatible=typing.Union[str,typing.Iterable[str],HasIncludePaths]
-def asIncludePaths(inc=IncludePathsCompatible)->typing.Iterable[str]:
+
+def asIncludePaths(inc:IncludePathsCompatible)->typing.Iterable[str]:
     """
     take any IncludePathsCompatible and return an iterable of include paths
     """
     if isinstance(inc,str):
         inc=(inc,)
     elif hasattr(inc,"includePaths"):
-        inc=inc.includePaths
-    return inc
+        inc=inc.includePaths # type: ignore
+    return inc # type: ignore
 
 
 def headersAvailable(
@@ -79,7 +80,7 @@ def findHeadersLike(
     yeilds all headers like a given header name
     """
     headerSimple=headerToFind.split('.',1)[0].lower()
-    for h in headersAvailable(paths,baseDir):
+    for h in headersAvailable(paths,baseDir is not None):
         hSimple=headerToFind.split('.',1)[0].lower()
         if hSimple.find(headerSimple):
             if fullFilename:
@@ -100,9 +101,9 @@ def findHeader(
 
     If not found, raises HeaderNotFoundException
     """
-    for h in headersAvailable(paths,baseDir):
+    for h in headersAvailable(paths,baseDir is not None):
         hShort=h.rsplit(os.sep,1)[-1]
         if hShort==headerToFind:
             return h
     suggestions=findHeadersLike(headerToFind,paths)
-    raise HeaderNotFoundException(headerToFind,paths,suggestions)
+    raise HeaderNotFoundException(headerToFind,paths,suggestions) # type: ignore

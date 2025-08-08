@@ -113,7 +113,7 @@ def loadCEnums(filename:str,globalizeAll:bool=False
         valDict:typing.Dict[str,typing.Any]
         for enumName,valDict in enums.items():
             if enumName is None:
-                globalize(values)
+                globalize(valDict)
             else:
                 tmpEnum=Enum(enumName,valDict) # type: ignore
                 globals()[enumName]=tmpEnum

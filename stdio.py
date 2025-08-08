@@ -54,7 +54,7 @@ class PrintfFormatPlaceholder:
         else:
             self.width=int(width)
         self.precision:typing.Optional[int]
-        if precision is None or isinstance(width,int):
+        if precision is None or isinstance(precision,int):
             self.precision=precision
         else:
             self.precision=int(precision.rsplit('.',1)[-1])

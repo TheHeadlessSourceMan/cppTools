@@ -67,7 +67,7 @@ class CompileCommand:
                     cmd.append(v)
                 elif k.startswith('-'):
                     cmd.append(k+v)
-                elif len(k==1):
+                elif len(k)==1:
                     cmd.append(f'-{k}{v}')
                 else:
                     cmd.append(f'--{k}')
@@ -103,4 +103,4 @@ class CompileCommand:
         """
         yield all headers available in the include paths
         """
-        yield from headersAvailable(self)
+        yield from headersAvailable(self.baseDir)
